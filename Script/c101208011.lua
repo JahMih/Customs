@@ -1,5 +1,5 @@
 --Diabellstar the Sin Adjudicator
---Scripted by JahMih
+--Scripted by Satellaa (Modified)
 local s,id=GetID()
 function s.initial_effect(c)
 	--Always treated as a "Sinful Spoils" card
@@ -79,10 +79,12 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and Duel.Destroy(tc,REASON_EFFECT)~=0 then
 		if Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_MZONE,0,1,nil,SET_DIABELL) then
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-			local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spsynfilter),tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
-			if #g>0 then
-				Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
+			if Duel.GetLocationCountFromEx(tp)>0 then
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+				local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spsynfilter),tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
+				if #g>0 then
+					Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
+				end
 			end
 		end
 	end
