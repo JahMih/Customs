@@ -14,9 +14,19 @@ function s.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,id)
+	e1:SetCondition(s.spellcon) -- Restrict to Main Phase
 	e1:SetTarget(s.spelltg)
 	e1:SetOperation(s.spellop)
 	c:RegisterEffect(e1)
+
+	-- Reset flag at the start of the turn after the next one
+	local e1b=Effect.CreateEffect(c)
+	e1b:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e1b:SetCode(EVENT_PHASE_START+PHASE_DRAW)
+	e1b:SetCountLimit(1,{id,2}) 
+	e1b:SetOperation(s.resetflag)
+	Duel.RegisterEffect(e1b,0)
+	Duel.RegisterEffect(e1b,1)
 
 	--Destroy a monster and a Continuous Spell (Quick Effect)
 	local e2=Effect.CreateEffect(c)
@@ -31,6 +41,12 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 
+-- Condition: Can only activate during the Main Phase and not locked from last use
+function s.spellcon(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.IsMainPhase() and e:GetHandler():GetFlagEffect(id)==0
+end
+
+-- Select target to place as Continuous Spell
 function s.spelltg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
@@ -38,13 +54,24 @@ function s.spelltg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
 
+-- Place target as Continuous Spell & lock effect for next turn
 function s.spellop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
 		Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
 	end
+	e:GetHandler():RegisterFlagEffect(id,RESET_PHASE+PHASE_END+RESET_OPPO_TURN,0,1) -- Lock until the turn after the opponent's turn
 end
 
+-- Reset the lock at the start of the turn after the opponent’s turn
+function s.resetflag(e,tp,eg,ep,ev,re,r,rp)
+	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
+	for tc in aux.Next(g) do
+		tc:ResetFlagEffect(id)
+	end
+end
+
+-- Select & Destroy 1 Monster & 1 Continuous Spell
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 		and Duel.IsExistingTarget(Card.IsType,tp,LOCATION_SZONE,LOCATION_SZONE,1,nil,TYPE_CONTINUOUS) end
@@ -56,6 +83,7 @@ function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,2,0,0)
 end
 
+-- Destroy selected Monster & Continuous Spell
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetTargetCards(e)
 	if #g>0 then
