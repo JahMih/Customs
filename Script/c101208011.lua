@@ -23,7 +23,7 @@ function s.initial_effect(c)
 	e1:SetOperation(s.spprocop)
 	c:RegisterEffect(e1)
 
-	--Quick Effect: Pay half LP, target 1 opponent's card, destroy it, then Special Summon if another "Diabell" is on the field
+	--Quick Effect: Pay half LP, target 1 opponent's card, destroy it, then optionally Special Summon if another "Diabell" is on the field
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON)
@@ -78,8 +78,8 @@ end
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and Duel.Destroy(tc,REASON_EFFECT)~=0 then
-		if Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_MZONE,0,1,nil,SET_DIABELL) then
-			if Duel.GetLocationCountFromEx(tp)>0 then
+		if Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_MZONE,0,1,nil,SET_DIABELL) and Duel.GetLocationCountFromEx(tp)>0 then
+			if Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
 				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 				local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spsynfilter),tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
 				if #g>0 then
