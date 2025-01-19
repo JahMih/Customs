@@ -5,7 +5,7 @@ function s.initial_effect(c)
     Synchro.AddProcedure(c,aux.FilterBoolFunction(Card.IsType,TYPE_TUNER),1,1,Synchro.NonTuner(nil),1,99)
     c:EnableReviveLimit()
 
-    --Main Phase Effect: Place as Continuous Spell (Quick Effect, once per turn, skips next turn)
+    --Main Phase Effect (Quick Effect): Place as Continuous Spell, then lock next turn
     local e1=Effect.CreateEffect(c)
     e1:SetDescription(aux.Stringid(id,0))
     e1:SetCategory(CATEGORY_TOFIELD)
@@ -13,20 +13,21 @@ function s.initial_effect(c)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetRange(LOCATION_MZONE)
     e1:SetCountLimit(1,id)
-    e1:SetCondition(s.ctcon) -- New condition to check if effect is locked
+    e1:SetCondition(s.ctcon)
     e1:SetTarget(s.cttg)
     e1:SetOperation(s.ctop)
     c:RegisterEffect(e1)
 
-    --Prevent effect activation on the next turn
+    -- Reset the effect lock at the start of the next turn
     local e1b=Effect.CreateEffect(c)
     e1b:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
     e1b:SetCode(EVENT_PHASE_START+PHASE_DRAW)
-    e1b:SetCountLimit(1)
+    e1b:SetCountLimit(1,{id,2}) -- Prevents multiple resets
     e1b:SetOperation(s.resetflag)
     Duel.RegisterEffect(e1b,0)
+    Duel.RegisterEffect(e1b,1)
 
-    --Battle Phase Effect: Destroy
+    --Battle Phase Effect (Quick Effect): Destroy 1 Monster & 1 Continuous Spell
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,1))
     e2:SetCategory(CATEGORY_DESTROY)
@@ -39,13 +40,12 @@ function s.initial_effect(c)
     c:RegisterEffect(e2)
 end
 
--- Store a flag to prevent reactivation next turn
-s.flag=false
-
+-- Condition to restrict "Place as Continuous Spell" to Main Phase and prevent activation in the next turn
 function s.ctcon(e,tp,eg,ep,ev,re,r,rp)
-    return not s.flag -- Prevent activation if the flag was set last turn
+    return Duel.IsMainPhase() and e:GetHandler():GetFlagEffect(id)==0
 end
 
+-- Select target to place as Continuous Spell
 function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_MZONE+LOCATION_GRAVE) and chkc:IsFaceup() end
     if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,nil) end
@@ -53,6 +53,7 @@ function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,1,nil)
 end
 
+-- Place target as Continuous Spell & lock effect for next turn
 function s.ctop(e,tp,eg,ep,ev,re,r,rp)
     local tc=Duel.GetFirstTarget()
     if tc and tc:IsRelateToEffect(e) then
@@ -62,14 +63,18 @@ function s.ctop(e,tp,eg,ep,ev,re,r,rp)
             Duel.MoveToField(tc,tp,tc:GetControler(),LOCATION_SZONE,POS_FACEUP,true)
         end
     end
-    s.flag=true -- Set flag to prevent effect next turn
+    e:GetHandler():RegisterFlagEffect(id,RESET_PHASE+PHASE_END+RESET_OPPO_TURN,0,1) -- Locks effect until next turn ends
 end
 
--- Reset flag at the start of the next turn
+-- Reset the lock at the start of the next turn
 function s.resetflag(e,tp,eg,ep,ev,re,r,rp)
-    s.flag=false
+    local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
+    for tc in aux.Next(g) do
+        tc:ResetFlagEffect(id)
+    end
 end
 
+-- Select & Destroy 1 Monster & 1 Continuous Spell
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingTarget(Card.IsType,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil,TYPE_MONSTER) 
         and Duel.IsExistingTarget(Card.IsType,tp,LOCATION_SZONE,LOCATION_SZONE,1,nil,TYPE_CONTINUOUS) end
@@ -81,6 +86,7 @@ function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
     Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,#g1,0,0)
 end
 
+-- Destroy selected Monster & Continuous Spell
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
     local g=Duel.GetTargetCards(e)
     if #g>0 then
