@@ -20,9 +20,9 @@ function s.initial_effect(c)
     e1:SetOperation(s.first_operation)
     c:RegisterEffect(e1)
     
-    -- Mark that the first effect has been used
+    -- Mark turn tracking for the first effect
     aux.GlobalCheck(s,function()
-        s[0]=0 -- Keeps track of the last turn this effect was activated
+        s[0]=0 -- Tracks the last turn the first effect was activated
     end)
     
     -- Second Effect: Destroy a monster and a Continuous Spell
@@ -42,8 +42,8 @@ end
 
 -- First Effect: Place face-up monster as Continuous Spell
 function s.first_condition(e,tp,eg,ep,ev,re,r,rp)
-    -- Ensure it's the Main Phase and the effect wasn't used in the past 2 turns
-    return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2 and 
+    -- Must be the Main Phase and not used in the last turn
+    return (Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2) and 
            Duel.GetTurnCount()>s[0]+1
 end
 function s.first_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
