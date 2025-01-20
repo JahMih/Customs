@@ -50,7 +50,6 @@ end
 function s.spelltg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then 
 		return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,nil) 
-		and Duel.IsExistingTarget(Card.IsType,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil,TYPE_MONSTER) 
 	end
 
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
