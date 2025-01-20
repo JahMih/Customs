@@ -80,7 +80,13 @@ function s.first_operation(e,tp,eg,ep,ev,re,r,rp)
         tc:RegisterEffect(e1)
         
         -- Update turn tracking to lock the effect for the next turn
-        s[0]=Duel.GetTurnCount()
+        --s[0]=Duel.GetTurnCount()
+			local c=e:GetHandler()
+		if c:IsRelateToEffect(e) then
+			local reset=RESET_SELF_TURN
+			if Duel.IsTurnPlayer(tp) then reset=RESET_OPPO_TURN end
+			c:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+reset,EFFECT_FLAG_CLIENT_HINT,1,0,aux.Stringid(id,2))
+		end
     end
 end
 
