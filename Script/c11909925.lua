@@ -44,7 +44,7 @@ end
 function s.first_condition(e,tp,eg,ep,ev,re,r,rp)
     -- Must be the Main Phase and not used in the last turn
     return (Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2) and 
-           Duel.GetTurnCount()>s[0]+1
+           Duel.GetTurnCount()>s[0]
 end
 function s.first_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_MZONE+LOCATION_GRAVE) and chkc:IsFaceup() end
