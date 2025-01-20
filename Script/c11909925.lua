@@ -31,10 +31,8 @@ function s.initial_effect(c)
     e2:SetDescription(aux.Stringid(id,1))
     e2:SetCategory(CATEGORY_DESTROY)
     e2:SetType(EFFECT_TYPE_QUICK_O)  -- Quick Effect
-    e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e2:SetRange(LOCATION_MZONE)
-    e2:SetHintTiming(0,TIMING_BATTLE_END)  -- Ensures it's available at the end of the Battle Phase
     e2:SetCountLimit(1,id+1) -- Separate count for the second effect
     e2:SetCondition(s.second_condition)
     e2:SetTarget(s.second_target)
@@ -94,8 +92,9 @@ end
 
 -- Second Effect: Destroy a monster and a Continuous Spell
 function s.second_condition(e,tp,eg,ep,ev,re,r,rp)
-    -- Must be the Battle Phase
-    return Duel.GetCurrentPhase()==PHASE_BATTLE
+    -- Must be the Battle Phase or Attack Declaration
+    local phase = Duel.GetCurrentPhase()
+    return phase == PHASE_BATTLE or phase == PHASE_DAMAGE_CAL
 end
 function s.second_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return false end
