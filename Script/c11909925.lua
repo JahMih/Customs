@@ -20,10 +20,10 @@ function s.initial_effect(c)
     e1:SetOperation(s.first_operation)
     c:RegisterEffect(e1)
     
-    -- Initialize global variable for turn tracking
+    -- Initialize global variables for turn tracking
     aux.GlobalCheck(s,function()
-        s[0]=0 -- Tracks the turn effect was last activated
-        s[1]=false -- Flag for whether the effect is "locked" during the next turn
+        s[0]=-1 -- Last turn the effect was activated (initialized to -1)
+        s[1]=false -- Flag to indicate if the effect is locked
     end)
     
     -- Second Effect: Destroy a monster and a Continuous Spell
@@ -45,9 +45,11 @@ end
 -- First Effect: Place face-up monster as Continuous Spell
 function s.first_condition(e,tp,eg,ep,ev,re,r,rp)
     local ct=Duel.GetTurnCount()
-    -- The effect cannot be activated during the turn immediately after it was used
-    return (Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2) and 
-           (s[0]~=ct or not s[1]) -- Allow activation unless locked
+    -- Allow activation if:
+    -- 1. It's the Main Phase, AND
+    -- 2. The effect wasn't activated in the last turn (lock status cleared)
+    return (Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2) and
+           (ct~=s[0] or not s[1])
 end
 function s.first_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then
