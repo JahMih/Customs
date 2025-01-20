@@ -21,7 +21,7 @@ function s.initial_effect(c)
     e1:SetOperation(s.e1operation)
     c:RegisterEffect(e1)
     
-    -- Cannot use first effect next turn
+    -- Lock First Effect for Next Turn
     local e1limit = Effect.CreateEffect(c)
     e1limit:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
     e1limit:SetCode(EVENT_PHASE_START + PHASE_DRAW)
@@ -46,24 +46,24 @@ function s.initial_effect(c)
     c:RegisterEffect(e2)
 end
 
--- Check if it is the Main Phase
+-- First Effect Condition: Can only activate if not locked from last turn
 function s.e1condition(e, tp, eg, ep, ev, re, r, rp)
-    return Duel.IsMainPhase() and not e:GetHandler():GetFlagEffect(id) == 0
+    return Duel.IsMainPhase() and e:GetHandler():GetFlagEffect(id) == 0
 end
 
--- Target 1 face-up monster on the field or in the GY
+-- First Effect Targeting: Select 1 face-up monster from Field or GY
 function s.e1filter(c)
     return c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)
 end
 
 function s.e1target(e, tp, eg, ep, ev, re, r, rp, chk, chkc)
-    if chkc then return chkc:IsOnField() or chkc:IsLocation(LOCATION_GRAVE) and s.e1filter(chkc) end
+    if chkc then return chkc:IsLocation(LOCATION_MZONE + LOCATION_GRAVE) and s.e1filter(chkc) end
     if chk == 0 then return Duel.IsExistingTarget(s.e1filter, tp, LOCATION_MZONE + LOCATION_GRAVE, LOCATION_MZONE + LOCATION_GRAVE, 1, nil) end
     Duel.Hint(HINT_SELECTMSG, tp, HINTMSG_TARGET)
     local g = Duel.SelectTarget(tp, s.e1filter, tp, LOCATION_MZONE + LOCATION_GRAVE, LOCATION_MZONE + LOCATION_GRAVE, 1, 1, nil)
 end
 
--- Operation: Place the targeted monster in the S&T Zone as a Continuous Spell
+-- First Effect Operation: Move the targeted monster to S&T Zone as a Continuous Spell
 function s.e1operation(e, tp, eg, ep, ev, re, r, rp)
     local tc = Duel.GetFirstTarget()
     if tc and tc:IsRelateToEffect(e) then
@@ -73,10 +73,10 @@ function s.e1operation(e, tp, eg, ep, ev, re, r, rp)
         tc:EnableReviveLimit()
     end
     -- Set the flag to prevent activation next turn
-    e:GetHandler():RegisterFlagEffect(id, RESET_PHASE + PHASE_END + RESET_SELF_TURN, 0, 1)
+    e:GetHandler():RegisterFlagEffect(id, RESET_PHASE + PHASE_END + RESET_OPPO_TURN, 0, 1)
 end
 
--- Reset the flag at the start of the next turn
+-- Reset the effect lock at the start of the next turn
 function s.resetop(e, tp, eg, ep, ev, re, r, rp)
     local c = e:GetHandler()
     if c:GetFlagEffect(id) > 0 then
@@ -84,12 +84,12 @@ function s.resetop(e, tp, eg, ep, ev, re, r, rp)
     end
 end
 
--- Check if it is the Battle Phase
+-- Second Effect Condition: Only during Battle Phase
 function s.e2condition(e, tp, eg, ep, ev, re, r, rp)
     return Duel.IsBattlePhase()
 end
 
--- Target 1 monster and 1 Continuous Spell on the field
+-- Second Effect Targeting: Select 1 Monster + 1 Continuous Spell
 function s.e2filter1(c)
     return c:IsFaceup() and c:IsMonster()
 end
@@ -110,7 +110,7 @@ function s.e2target(e, tp, eg, ep, ev, re, r, rp, chk, chkc)
     Duel.SetOperationInfo(0, CATEGORY_DESTROY, g1, 2, 0, 0)
 end
 
--- Operation: Destroy both selected cards
+-- Second Effect Operation: Destroy the selected Monster & Continuous Spell
 function s.e2operation(e, tp, eg, ep, ev, re, r, rp)
     local g = Duel.GetChainInfo(0, CHAININFO_TARGET_CARDS)
     if g then
