@@ -92,8 +92,8 @@ end
 
 -- Second Effect: Destroy a monster and a Continuous Spell
 function s.second_condition(e,tp,eg,ep,ev,re,r,rp)
-    -- Must be the Battle Phase or Attack Declaration
     local phase = Duel.GetCurrentPhase()
+    -- Allow activation during the start of the Battle Phase or when attack is declared
     return phase == PHASE_BATTLE or phase == PHASE_DAMAGE_CAL
 end
 function s.second_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
