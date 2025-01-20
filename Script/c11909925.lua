@@ -13,13 +13,14 @@ function s.initial_effect(c)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e1:SetRange(LOCATION_MZONE)
+    e1:SetHintTiming(0,TIMING_MAIN_END)
     e1:SetCountLimit(1,id)
     e1:SetCondition(s.first_condition)
     e1:SetTarget(s.first_target)
     e1:SetOperation(s.first_operation)
     c:RegisterEffect(e1)
     
-    -- Mark that the first effect has been used this turn
+    -- Mark that the first effect has been used
     aux.GlobalCheck(s,function()
         s[0]=0 -- Keeps track of the last turn this effect was activated
     end)
@@ -32,6 +33,7 @@ function s.initial_effect(c)
     e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e2:SetRange(LOCATION_MZONE)
+    e2:SetHintTiming(0,TIMING_BATTLE_END)
     e2:SetCountLimit(1,id+1)
     e2:SetTarget(s.second_target)
     e2:SetOperation(s.second_operation)
@@ -40,8 +42,9 @@ end
 
 -- First Effect: Place face-up monster as Continuous Spell
 function s.first_condition(e,tp,eg,ep,ev,re,r,rp)
-    -- Ensure the effect wasn't activated last turn
-    return Duel.GetTurnCount()>s[0]
+    -- Ensure it's the Main Phase and the effect wasn't used in the past 2 turns
+    return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2 and 
+           Duel.GetTurnCount()>s[0]+1
 end
 function s.first_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_MZONE+LOCATION_GRAVE) and chkc:IsFaceup() end
