@@ -12,9 +12,9 @@ function s.initial_effect(c)
     e1:SetCategory(CATEGORY_LEAVE_GRAVE)
     e1:SetType(EFFECT_TYPE_QUICK_O)
     e1:SetCode(EVENT_FREE_CHAIN)
-    e1:SetHintTiming(TIMING_MAIN_END)
+    e1:SetHintTiming(TIMINGS_CHECK_MONSTER + TIMING_MAIN_END)
     e1:SetRange(LOCATION_MZONE)
-    e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e1:SetProperty(EFFECT_FLAG_CARD_TARGET + EFFECT_FLAG_CLIENT_HINT)
     e1:SetCountLimit(1, id)
     e1:SetCondition(s.e1condition)
     e1:SetTarget(s.e1target)
@@ -60,7 +60,7 @@ function s.e1target(e, tp, eg, ep, ev, re, r, rp, chk, chkc)
     if chkc then return chkc:IsLocation(LOCATION_MZONE + LOCATION_GRAVE) and s.e1filter(chkc) end
     if chk == 0 then return Duel.IsExistingTarget(s.e1filter, tp, LOCATION_MZONE + LOCATION_GRAVE, LOCATION_MZONE + LOCATION_GRAVE, 1, nil) end
     Duel.Hint(HINT_SELECTMSG, tp, HINTMSG_TARGET)
-    local g = Duel.SelectTarget(tp, s.e1filter, tp, LOCATION_MZONE + LOCATION_GRAVE, LOCATION_MZONE + LOCATION_GRAVE, 1, 1, nil)
+    Duel.SelectTarget(tp, s.e1filter, tp, LOCATION_MZONE + LOCATION_GRAVE, LOCATION_MZONE + LOCATION_GRAVE, 1, 1, nil)
 end
 
 -- First Effect Operation: Move the targeted monster to S&T Zone as a Continuous Spell
