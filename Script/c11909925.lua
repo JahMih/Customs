@@ -36,7 +36,7 @@ function s.initial_effect(c)
     e2:SetRange(LOCATION_MZONE)
 	e2:SetHintTiming(0,TIMING_BATTLE_START|TIMING_BATTLE_END)
     e2:SetCountLimit(1,id+1) -- Separate count for the second effect
-    e2:SetCondition(s.second_condition)
+    e2:SetCondition(function() return Duel.IsBattlePhase() end)
     e2:SetTarget(s.second_target)
     e2:SetOperation(s.second_operation)
     c:RegisterEffect(e2)
@@ -93,11 +93,7 @@ function s.first_operation(e,tp,eg,ep,ev,re,r,rp)
 end
 
 -- Second Effect: Destroy a monster and a Continuous Spell
-function s.second_condition(e,tp,eg,ep,ev,re,r,rp)
-    local phase = Duel.GetCurrentPhase()
-    -- The second effect can be activated at any time during the Battle Phase (including when attack is declared)
-    return phase == PHASE_BATTLE or phase == PHASE_DAMAGE_CAL or phase == PHASE_ATTACK
-end
+
 function s.second_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return false end
     if chk==0 then
