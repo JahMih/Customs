@@ -78,11 +78,9 @@ function s.first_operation(e,tp,eg,ep,ev,re,r,rp)
         e1:SetReset(RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET)
         e1:SetValue(TYPE_CONTINUOUS+TYPE_SPELL)
         tc:RegisterEffect(e1)
-        local reset=RESET_SELF_TURN
-			if Duel.IsTurnPlayer(tp) then reset=RESET_OPPO_TURN end
+        
         -- Update turn tracking to lock the effect for the next turn
-        --s[0]=Duel.GetTurnCount()
-
+        s[0]=Duel.GetTurnCount()
     end
 end
 
