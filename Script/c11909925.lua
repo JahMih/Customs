@@ -14,7 +14,7 @@ function s.initial_effect(c)
     e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e1:SetRange(LOCATION_MZONE)
     e1:SetHintTiming(0,TIMING_MAIN_END)
-    e1:SetCountLimit(1,id)
+    e1:SetCountLimit(1,id) -- Ensures the effect can only be activated once per turn
     e1:SetCondition(s.first_condition)
     e1:SetTarget(s.first_target)
     e1:SetOperation(s.first_operation)
@@ -42,15 +42,30 @@ end
 
 -- First Effect: Place face-up monster as Continuous Spell
 function s.first_condition(e,tp,eg,ep,ev,re,r,rp)
-    -- Allow activation if the effect wasn't used in the previous turn
+    -- Must be the Main Phase and not used in the last turn
     return (Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2) and 
            (Duel.GetTurnCount()~=s[0])
 end
 function s.first_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-    if chkc then return chkc:IsLocation(LOCATION_MZONE+LOCATION_GRAVE) and chkc:IsFaceup() end
-    if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,nil) end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
-    local g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,1,nil)
+    if chkc then
+        return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() or
+               chkc:IsLocation(LOCATION_GRAVE) and chkc:IsType(TYPE_MONSTER)
+    end
+    if chk==0 then
+        return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) or 
+               Duel.IsExistingTarget(Card.IsType,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil,TYPE_MONSTER)
+    end
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+    local g=Duel.SelectTarget(tp,
+        function(c)
+            return c:IsFaceup() or (c:IsType(TYPE_MONSTER) and c:IsLocation(LOCATION_GRAVE))
+        end,
+        tp,
+        LOCATION_MZONE+LOCATION_GRAVE,
+        LOCATION_MZONE+LOCATION_GRAVE,
+        1,
+        1,
+        nil)
     Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
 function s.first_operation(e,tp,eg,ep,ev,re,r,rp)
