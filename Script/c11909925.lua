@@ -46,24 +46,30 @@ function s.spellcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsMainPhase() and Duel.GetFlagEffect(tp,id)==0
 end
 
--- Select target: face-up monster on the field or monster in the GY
-function s.spelltg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+-- Select 1 face-up monster on the field AND 1 monster in the GY
+function s.spelltg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then 
-		return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,nil) 
+		return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) 
+		and Duel.IsExistingTarget(Card.IsType,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil,TYPE_MONSTER) 
 	end
+
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	local g
-	if Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) then
-		g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,1,nil)
-	
-	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
+	local g1=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+	local g2=Duel.SelectTarget(tp,Card.IsType,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil,TYPE_MONSTER)
+
+	g1:Merge(g2)
+	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g1,2,0,0)
 end
 
--- Place target as Continuous Spell & lock effect for next turn
+-- Place both targets as Continuous Spells & lock effect for next turn
 function s.spellop(e,tp,eg,ep,ev,re,r,rp)
-	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsRelateToEffect(e) then
-		Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
+	local tg=Duel.GetTargetCards(e)
+	for tc in aux.Next(tg) do
+		if tc and tc:IsRelateToEffect(e) then
+			Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
+		end
 	end
 	Duel.RegisterFlagEffect(tp,id,RESET_PHASE+PHASE_END,0,2) -- Lock effect for next turn, resets after that
 end
