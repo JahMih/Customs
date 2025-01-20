@@ -14,13 +14,13 @@ function s.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,id)
-	e1:SetCondition(s.spellcon) -- Restrict to Main Phase and check effect lock
+	e1:SetCondition(s.spellcon) -- Restrict to Main Phase and prevent reuse next turn
 	e1:SetTarget(s.spelltg)
 	e1:SetOperation(s.spellop)
 	c:RegisterEffect(e1)
 
-	-- Lock effect usage for next turn
-	local e1b=Effect.CreateEffect(e1)
+	-- Prevent reuse of "Place as Continuous Spell" next turn
+	local e1b=Effect.CreateEffect(c)
 	e1b:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1b:SetCode(EVENT_TURN_END)
 	e1b:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
@@ -43,16 +43,22 @@ end
 
 -- Condition: Can only activate during the Main Phase and if not locked
 function s.spellcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.IsMainPhase() and e:GetHandler():GetFlagEffect(id)==0
+	return Duel.IsMainPhase() and Duel.GetFlagEffect(tp,id)==0
 end
 
 -- Select target: face-up monster on the field or monster in the GY
 function s.spelltg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then 
-		return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,nil) 
+		return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) 
+		or Duel.IsExistingTarget(Card.IsType,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil,TYPE_MONSTER) 
 	end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	local g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,1,1,nil)
+	local g
+	if Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) then
+		g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+	else
+		g=Duel.SelectTarget(tp,Card.IsType,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil,TYPE_MONSTER)
+	end
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
 
@@ -62,14 +68,13 @@ function s.spellop(e,tp,eg,ep,ev,re,r,rp)
 	if tc and tc:IsRelateToEffect(e) then
 		Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
 	end
-	e:GetHandler():RegisterFlagEffect(id,RESET_PHASE+PHASE_END+RESET_SELF_TURN,0,2) -- Lock effect for next turn, resets after that
+	Duel.RegisterFlagEffect(tp,id,RESET_PHASE+PHASE_END,0,2) -- Lock effect for next turn, resets after that
 end
 
--- Reset the lock at the start of the turn after the next one
+-- Reset the lock at the end of the opponent's turn after the next one
 function s.resetflag(e,tp,eg,ep,ev,re,r,rp)
-	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	for tc in aux.Next(g) do
-		tc:ResetFlagEffect(id)
+	if Duel.GetFlagEffect(tp,id)>0 then
+		Duel.ResetFlagEffect(tp,id)
 	end
 end
 
