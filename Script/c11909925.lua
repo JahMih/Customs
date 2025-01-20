@@ -15,7 +15,7 @@ function s.initial_effect(c)
     e1:SetRange(LOCATION_MZONE)
     e1:SetHintTiming(0,TIMING_MAIN_END)  -- Ensures it's available Main Phase
     e1:SetCountLimit(1,id) -- Ensures the effect can only be activated once per turn
-    e1:SetCondition(s.first_condition)
+    e1:SetCondition(function() return Duel.IsMainPhase() end)
     e1:SetTarget(s.first_target)
     e1:SetOperation(s.first_operation)
     c:RegisterEffect(e1)
@@ -43,15 +43,7 @@ function s.initial_effect(c)
 end
 
 -- First Effect: Place face-up monster as Continuous Spell
-function s.first_condition(e,tp,eg,ep,ev,re,r,rp)
-    local ct=Duel.GetTurnCount()
-    -- Allow activation if:
-    -- 1. It's the Main Phase (either PHASE_MAIN1 or PHASE_MAIN2)
-    -- 2. The effect wasn't activated this turn AND
-    -- 3. The effect wasn't activated in the last turn
-    return (Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2) and
-           (ct~=s[0]+1)
-end
+
 function s.first_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then
         return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() or
