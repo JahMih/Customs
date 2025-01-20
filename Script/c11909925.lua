@@ -34,7 +34,7 @@ function s.initial_effect(c)
     e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e2:SetRange(LOCATION_MZONE)
-	e2:SetHintTiming(0,TIMING_PHASE_BATTLE)
+	e2:SetHintTiming(0,TIMING_BATTLE_START|TIMING_BATTLE_END)
     e2:SetCountLimit(1,id+1) -- Separate count for the second effect
     e2:SetCondition(s.second_condition)
     e2:SetTarget(s.second_target)
