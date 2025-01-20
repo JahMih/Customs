@@ -9,11 +9,11 @@ function s.initial_effect(c)
     local e1=Effect.CreateEffect(c)
     e1:SetDescription(aux.Stringid(id,0))
     e1:SetCategory(CATEGORY_TOHAND+CATEGORY_LEAVE_GRAVE)
-    e1:SetType(EFFECT_TYPE_QUICK_O)
+    e1:SetType(EFFECT_TYPE_QUICK_O)  -- Quick Effect
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e1:SetRange(LOCATION_MZONE)
-    e1:SetHintTiming(0,TIMING_MAIN_END)  -- Ensure this is available at the end of the Main Phase
+    e1:SetHintTiming(0,TIMING_MAIN_END)  -- Ensures it's available at the end of Main Phase
     e1:SetCountLimit(1,id) -- Ensures the effect can only be activated once per turn
     e1:SetCondition(s.first_condition)
     e1:SetTarget(s.first_target)
@@ -30,11 +30,11 @@ function s.initial_effect(c)
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,1))
     e2:SetCategory(CATEGORY_DESTROY)
-    e2:SetType(EFFECT_TYPE_QUICK_O)
+    e2:SetType(EFFECT_TYPE_QUICK_O)  -- Quick Effect
     e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e2:SetRange(LOCATION_MZONE)
-    e2:SetHintTiming(0,TIMING_BATTLE_END)
+    e2:SetHintTiming(0,TIMING_BATTLE_END)  -- Ensures it's available at the end of the Battle Phase
     e2:SetCountLimit(1,id+1) -- Separate count for the second effect
     e2:SetCondition(s.second_condition)
     e2:SetTarget(s.second_target)
