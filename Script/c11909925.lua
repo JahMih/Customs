@@ -13,7 +13,7 @@ function s.initial_effect(c)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e1:SetRange(LOCATION_MZONE)
-    e1:SetHintTiming(0,TIMING_MAIN)  -- Ensures it's available Main Phase
+    e1:SetHintTiming(0,TIMING_MAIN_END)  -- Ensures it's available Main Phase
     e1:SetCountLimit(1,id) -- Ensures the effect can only be activated once per turn
     e1:SetCondition(s.first_condition)
     e1:SetTarget(s.first_target)
