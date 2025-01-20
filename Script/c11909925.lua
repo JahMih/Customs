@@ -20,7 +20,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 
 	-- Lock effect usage for next turn
-	local e1b=Effect.CreateEffect(c)
+	local e1b=Effect.CreateEffect(e1)
 	e1b:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1b:SetCode(EVENT_TURN_END)
 	e1b:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
