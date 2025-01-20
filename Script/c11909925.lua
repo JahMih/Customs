@@ -48,7 +48,7 @@ end
 
 -- Check if it is the Main Phase
 function s.e1condition(e, tp, eg, ep, ev, re, r, rp)
-    return Duel.IsMainPhase() and not e:GetHandler():GetFlagEffect(id) > 0
+    return Duel.IsMainPhase() and not e:GetHandler():GetFlagEffect(id) == 0
 end
 
 -- Target 1 face-up monster on the field or in the GY
